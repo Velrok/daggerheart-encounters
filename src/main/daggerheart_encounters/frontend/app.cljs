@@ -7,16 +7,43 @@
 (defonce app-state (r/atom
                     (or (let [params (.get (new js/URLSearchParams js/window.location.search) "state")]
                           (edn/read-string params))
-                        {})))
+                        {:adversaries []})))
 
 ;; Views
+(defn <adversaries>
+  [{:keys [adversaries]}]
+  (let [headers ["Name" "Stress" "HP" "Minor" "Major" "Severe"]]
+    [:table
+     [:thead
+      [:tr (for [header headers]
+             [:th {:key header} header])]]
+     [:tbody
+      (doall
+       (map-indexed
+        (fn [idx adversary]
+          [:tr {:key (:name adversary)}
+           [:td {:on-click #(let [response (js/prompt "new name:"
+                                                      (:name adversary))]
+                              (when response
+                                (swap! adversaries assoc-in [idx :name]
+                                       response)))}
+            (:name adversary)]
+           [:td (:stress adversary)
+            [:button {:on-click #(swap! adversaries update-in [idx :stress] dec)} "-"]
+            [:button {:on-click #(swap! adversaries update-in [idx :stress] inc)} "+"]]
+           [:td (:hp adversary)
+            [:button {:on-click #(swap! adversaries update-in [idx :hp] dec)} "-"]
+            [:button {:on-click #(swap! adversaries update-in [idx :hp] inc)} "+"]]])
+        @adversaries))]]))
+
 (defn <main>
   []
-  (let [counter (r/cursor app-state [:counter])]
+  (let [adversaries (r/cursor app-state [:adversaries])]
     [:<>
-     [:h1 "Hi"]
-     [:button {:on-click #(swap! counter  inc)} "Click me"]
-     [:pre {} @app-state]]))
+     [:h1 "Adversaries"]
+     [<adversaries> {:adversaries adversaries}]
+     [:button {:on-click #(swap! adversaries conj {:name "" :hp 0 :stress 0})}
+      "add row"]]))
 
 ;; Setup
 
