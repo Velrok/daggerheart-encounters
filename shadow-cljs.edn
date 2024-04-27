@@ -1,0 +1,18 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src/dev"
+  "src/main"
+  "src/test"]
+
+ :dependencies
+ [[reagent "1.2.0"]]
+
+ :dev-http {8080 "public"}
+
+ :builds
+ {:frontend
+  {:target :browser
+   :modules {:main {:init-fn daggerheart-encounters.frontend.app/init}}
+   :devtools
+   {:after-load daggerheart-encounters.frontend.app/start
+    :before-load daggerheart-encounters.frontend.app/stop}}}}
